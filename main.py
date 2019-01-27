@@ -77,9 +77,13 @@ def filter_empty_rows(df):
     df = df[~df["distance"].isin(to_remove["distance"])]
     return df
 
+
+all_dfs = []
+run_count = 0
 data = "./data"
 for file in os.listdir(data):
     if ".fit" in file:
+        run_count += 1
         path = os.path.join(data,file)
         fit_file = FitFile(path)
         messages = list(fit_file.get_messages())
@@ -91,7 +95,11 @@ for file in os.listdir(data):
         df = filter_by_value_frequency(df)
         df = filter_by_activity_type(df)
         df = filter_empty_rows(df)
-        df.to_csv(path.replace(".fit",".csv").replace("data","csvs"), sep=',')
+        df["run_number"] = run_count
+        all_dfs.append(df)
+
+final_df = pd.concat(all_dfs)
+final_df.to_csv(path.replace(".fit",".csv").replace("data","csvs"), sep=',')
   
 
 
