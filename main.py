@@ -66,6 +66,17 @@ def filter_by_value_frequency(df):
             df = df.drop(key, axis=1)
     return df
 
+def filter_by_activity_type(df):
+    columns = list(df.columns.values)
+    if "activity_type" in columns:
+        df = df[df['activity_type'] == "running"]
+    return df
+
+def filter_empty_rows(df):
+    to_remove = df[df['distance'].isnull()]
+    df = df[~df["distance"].isin(to_remove["distance"])]
+    return df
+
 data = "./data"
 for file in os.listdir(data):
     if ".fit" in file:
@@ -78,10 +89,10 @@ for file in os.listdir(data):
         dfs = list(map(lambda row: row_to_df(template, row), rows))
         df = pd.concat(dfs)
         df = filter_by_value_frequency(df)
-        df = df[df['activity_type'] == "running"]
+        df = filter_by_activity_type(df)
+        df = filter_empty_rows(df)
         df.to_csv(path.replace(".fit",".csv").replace("data","csvs"), sep=',')
   
-
 
 
 
