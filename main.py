@@ -93,6 +93,10 @@ for file in os.listdir(data):
         dfs = list(map(lambda row: row_to_df(template, row), rows))
         df = pd.concat(dfs)
         df = filter_by_value_frequency(df)
+        column_names = list(df.columns.values)
+        if not "distance" in column_names:
+            print("Distance not in df: {0}".format(df))
+            continue
         df = filter_by_activity_type(df)
         df = filter_empty_rows(df)
         df["run_number"] = run_count
