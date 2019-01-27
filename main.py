@@ -50,7 +50,21 @@ def aggregate_dfs(dfs):
         df = df.append(single_df)
     return df
 
-
+def filter_by_value_frequency(df):
+    d = {}
+    for column in list(df.columns.values):
+        cnt = 0
+        for row in df[column]:
+            if row != None:
+                cnt += 1
+        d[column] = cnt
+    
+    import operator
+    t = sorted(d.items(), key=operator.itemgetter(1))
+    for key,value in t:
+        if value < len(df)/2:
+            df = df.drop(key, axis=1)
+    return df
 
 data = "./data"
 for file in os.listdir(data):
@@ -63,6 +77,21 @@ for file in os.listdir(data):
         rows = list(map(lambda message: fill_row(template, message), messages))
         dfs = list(map(lambda row: row_to_df(template, row), rows))
         df = pd.concat(dfs)
+        df = filter_by_value_frequency(df)
+        df = df[df['activity_type'] == "running"]
         df.to_csv(path.replace(".fit",".csv").replace("data","csvs"), sep=',')
-        break
-        
+  
+
+
+
+
+    
+    
+
+
+
+
+
+
+
+      
