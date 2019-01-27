@@ -1,15 +1,9 @@
 from fitparse import FitFile
 import os
 import pandas
+import pandas as pd
 from collections import defaultdict
 from copy import deepcopy
-
-data = "./data"
-for file in os.listdir(data):
-    if ".fit" in file:
-        path = os.path.join(data,file)
-        fit_file = FitFile(path)
-
 
 def get_distinct_keys(messages):
     message_dict = list(map(lambda x: x.get_values(), messages))
@@ -39,21 +33,36 @@ def fill_row(template, message):
             row[key] = value
     return row
 
-def create_df_from_rows(rows):  
+def row_to_df(template, row):
+    """
+    Mutates row to contain garmin data for the given columns
+    """
+    new_df = pd.DataFrame([row])
+    for column in list(new_df.columns.values):
+        if not column in template:
+            print(column)
+            new_df = new_df.drop(column)
+    return new_df
+
+def aggregate_dfs(dfs):  
     df = pandas.DataFrame([], columns=row_template.keys())
-    for row in rows:
-        new_df = pandas.DataFrame([list(row.values())], columns = list(row.keys()))
-        df = df.append(new_df)
+    for single_df in dfs:
+        df = df.append(single_df)
     return df
 
-messages = list(fit_file.get_messages())
-keys = get_distinct_keys(messages)
-row_template = create_row_template(keys)
-rows = list(map(lambda message: fill_row(row_template, message), messages))
-df = create_df_from_rows(rows)
 
 
-
-
-#df = pandas.DataFrame(messages)
-#df.to_csv("./{0}.csv".format(file), sep=',',index=False)
+data = "./data"
+for file in os.listdir(data):
+    if ".fit" in file:
+        path = os.path.join(data,file)
+        fit_file = FitFile(path)
+        messages = list(fit_file.get_messages())
+        keys = get_distinct_keys(messages)
+        template = create_row_template(keys)
+        rows = list(map(lambda message: fill_row(template, message), messages))
+        dfs = list(map(lambda row: row_to_df(template, row), rows))
+        df = pd.concat(dfs)
+        df.to_csv(path.replace(".fit",".csv").replace("data","csvs"), sep=',')
+        break
+        
