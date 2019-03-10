@@ -94,22 +94,43 @@ for file in os.listdir(data):
         df = pd.concat(dfs)
         df = filter_by_value_frequency(df)
         column_names = list(df.columns.values)
-        if not "distance" in column_names:
-            print("Distance not in df: {0}".format(df))
-            continue
         df = filter_by_activity_type(df)
         df = filter_empty_rows(df)
         df["run_number"] = run_count
         all_dfs.append(df)
 
-final_df = pd.concat(all_dfs)
-final_df.to_csv(path.replace(".fit",".csv").replace("data","csvs"), sep=',')
-  
+save_df = pd.concat(all_dfs)
 
+from dateutil.parser import parse
+def to_timestamp(date):
+    return parse(date, fuzzy=True).timestamp()
 
+save_df['timestamp'] = save_df['timestamp'].apply(to_timestamp)
 
+columns_to_keep = ["distance",
+                   "cadence",
+                   "altitude",
+                   "enhanced_speed",
+                   "speed",
+                   "heart_rate",
+                   "step_length",
+                   "fractional_cadence",
+                   "speed,stance_time",
+                   "stance_time_balance",
+                   "stance_time_percent",
+                   "timestamp",
+                   "vertical_oscillation",
+                   "vertical_ratio",
+                   "run_number"]
     
-    
+data_to_analyze = save_df.filter(items=columns_to_keep)
+
+
+data_to_analyze.to_csv(path.replace(".fit",".csv").replace("data","csvs"), sep=',')
+
+
+
+
 
 
 
